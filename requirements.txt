@@ -1,0 +1,9 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+httpx==0.28.1
+groq==0.13.0
+langgraph==0.2.56
+langchain-core==0.3.25
+asyncpg==0.30.0
+python-dotenv==1.0.1
+aiofiles==24.1.0
