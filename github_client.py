@@ -34,6 +34,19 @@ class RepoFile:
     sha: str
 
 
+async def _get_default_branch(repo: str) -> str:
+    """Return the default branch name for a repo."""
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"https://api.github.com/repos/{repo}",
+            headers=_github_headers(),
+            timeout=10,
+        )
+    if resp.status_code == 200:
+        return resp.json().get("default_branch", "main")
+    raise RuntimeError(f"Repo not found: {repo} (status {resp.status_code})")
+
+
 async def get_repo_tree(repo: str, branch: str = "main") -> list[RepoFile]:
     """Fetch the full file tree of a repo (recursive)."""
     async with httpx.AsyncClient() as client:
@@ -42,6 +55,15 @@ async def get_repo_tree(repo: str, branch: str = "main") -> list[RepoFile]:
             headers=_github_headers(),
             timeout=20,
         )
+    if resp.status_code == 404 and branch == "main":
+        # repo may use master or another default branch — auto-detect and retry
+        branch = await _get_default_branch(repo)
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"https://api.github.com/repos/{repo}/git/trees/{branch}?recursive=1",
+                headers=_github_headers(),
+                timeout=20,
+            )
     if resp.status_code != 200:
         raise RuntimeError(f"GitHub tree fetch failed: {resp.status_code} {resp.text[:200]}")
 
