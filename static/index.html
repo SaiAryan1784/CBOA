@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CBOA - Codebase Onboarding Agent</title>
+  <title>CBOA — Codebase Onboarding Agent</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,486 +11,527 @@
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <style>
     :root {
-      --bg: #050810;
-      --panel-bg: rgba(255, 255, 255, 0.04);
-      --panel-border: rgba(255, 255, 255, 0.08);
-      --accent-1: #6366f1;
-      --accent-2: #a855f7;
-      --accent-grad: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --text-main: #e2e8f0;
-      --text-mut: #8b949e;
-      --font-stack: 'Inter', system-ui, -apple-system, sans-serif;
+      --bg:            #0c0c0c;
+      --surface:       #141414;
+      --surface-2:     #1e1e1e;
+      --border:        #2a2a2a;
+      --border-subtle: #1f1f1f;
+      --text:          #f0f0f0;
+      --text-2:        #8c8c8c;
+      --text-3:        #484848;
+      --accent:        #3b82f6;
+      --accent-hover:  #2563eb;
+      --success:       #22c55e;
+      --warning:       #f59e0b;
+      --danger:        #ef4444;
+      --font:          'Inter', system-ui, -apple-system, sans-serif;
+      --mono:          ui-monospace, 'JetBrains Mono', 'Fira Code', monospace;
     }
 
-    /* Reset & Base */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: var(--font-stack);
+      font-family: var(--font);
       background: var(--bg);
-      color: var(--text-main);
+      color: var(--text);
       height: 100vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { 
-      background: rgba(99, 102, 241, 0.3); 
-      border-radius: 6px; 
-    }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.6); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
 
-    /* Canvas Background */
-    #bg-canvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    #app {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      flex: 1;
-    }
-
-    /* Utility */
-    .glass-panel {
-      background: var(--panel-bg);
-      border-bottom: 1px solid var(--panel-border);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-    .glass-box {
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      pointer-events: auto;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 12px;
-    }
-
-    /* Animation Classes */
-    @keyframes pulse-shimmer {
-      0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    @keyframes fade-slide-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Header */
+    /* ── Header ─────────────────────────────────────────── */
     header {
-      padding: 16px 24px;
+      height: 56px;
+      padding: 0 24px;
       display: flex;
       align-items: center;
-      gap: 16px;
-      z-index: 10;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
     .logo {
-      font-size: 1.5rem;
+      font-size: 15px;
       font-weight: 700;
-      background: var(--accent-grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
-      letter-spacing: -0.5px;
+      color: var(--text);
+      letter-spacing: -0.3px;
     }
-    header h1 { font-size: 1.1rem; font-weight: 600; color: var(--text-main); line-height: 1.2; }
-    header span.tagline { font-size: 0.85rem; color: var(--text-mut); font-weight: 400; line-height: 1.2; }
+    .header-sep { color: var(--text-3); font-size: 14px; }
+    .header-title { font-size: 14px; color: var(--text-2); font-weight: 400; }
 
-    /* Analyze Bar */
+    /* ── Analyze Bar ─────────────────────────────────────── */
     #analyze-bar {
-      padding: 16px 24px;
+      padding: 14px 24px;
       display: flex;
-      gap: 12px;
-      align-items: center;
-      z-index: 10;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
-    .input-wrapper {
-      position: relative;
+    #repo-input {
       flex: 1;
-      display: flex;
-    }
-    #repo-input, #branch-input, #chat-input {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid var(--panel-border);
-      border-radius: 8px;
-      color: var(--text-main);
-      font-family: var(--font-stack);
-      font-size: 0.95rem;
-      padding: 10px 16px;
-      transition: all 0.2s;
-    }
-    #repo-input:focus, #branch-input:focus, #chat-input:focus {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-right: none;
+      border-radius: 6px 0 0 6px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      padding: 9px 14px;
       outline: none;
-      border-color: var(--accent-1);
-      box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+      transition: border-color 0.15s;
     }
-    #repo-input { flex: 1; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none;}
-    #branch-input { width: 120px; border-radius: 0; border-right: none;}
-    
+    #repo-input:focus { border-color: var(--accent); position: relative; z-index: 1; }
+    #repo-input::placeholder { color: var(--text-3); }
+
+    #branch-input {
+      width: 110px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-right: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    #branch-input:focus { border-color: var(--accent); position: relative; z-index: 1; }
+    #branch-input::placeholder { color: var(--text-3); }
+
     #analyze-btn {
-      background: var(--accent-grad);
+      background: var(--accent);
       color: #fff;
-      border: none;
-      padding: 11px 24px;
-      border-radius: 0 8px 8px 0;
-      font-size: 0.95rem;
+      border: 1px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 9px 20px;
+      font-size: 14px;
       font-weight: 600;
+      font-family: var(--font);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background 0.15s, border-color 0.15s;
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
-      min-width: 120px;
-    }
-    /* Only pulse when not disabled */
-    #analyze-btn:not(:disabled) {
-      animation: pulse-shimmer 2s infinite;
+      white-space: nowrap;
     }
     #analyze-btn:hover:not(:disabled) {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
     }
     #analyze-btn:disabled {
-      background: #2d3748;
-      color: #718096;
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text-3);
       cursor: not-allowed;
-      animation: none;
     }
-    .btn-spinner {
-      width: 18px; height: 18px;
-      border: 3px solid rgba(255,255,255,0.3);
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
       border-top-color: #fff;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.7s linear infinite;
     }
 
-    /* Status Bar */
+    /* ── Progress Bar ────────────────────────────────────── */
+    #progress-track {
+      height: 3px;
+      background: var(--border-subtle);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: none;
+    }
+    #progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.4s ease, background 0.3s;
+    }
+    #progress-fill.indeterminate {
+      width: 35%;
+      animation: indeterminate 1.5s ease-in-out infinite;
+    }
+    @keyframes indeterminate {
+      0%   { transform: translateX(-150%); }
+      100% { transform: translateX(400%); }
+    }
+    #progress-fill.done  { width: 100%; background: var(--success); animation: none; }
+    #progress-fill.error { width: 100%; background: var(--danger);  animation: none; }
+
+    /* ── Status Text ─────────────────────────────────────── */
     #status-bar {
       display: none;
-      padding: 12px 24px;
-      font-size: 0.85rem;
-      align-items: center;
-      gap: 12px;
-      z-index: 10;
-      border-bottom: 1px solid var(--panel-border);
-      background: rgba(99, 102, 241, 0.1);
+      padding: 7px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
-    #status-bar.visible { display: flex; }
-    .status-text-grad {
-      background: var(--accent-grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 600;
-      animation: fade-slide-in 0.3s ease;
-    }
-    .progress-dots { display: flex; gap: 4px; align-items: center; }
-    .dot { width: 6px; height: 6px; background: var(--accent-1); border-radius: 50%; animation: pulse 1.5s infinite; }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
+    #status-bar.visible { display: block; }
+    #status-text { font-size: 12px; color: var(--text-2); }
+    #status-text.success { color: var(--success); }
+    #status-text.error   { color: var(--danger); }
 
-    @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px var(--accent-1); } }
+    /* ── Main Layout ─────────────────────────────────────── */
+    #main { display: flex; flex: 1; overflow: hidden; }
 
-    /* Main Content */
-    #main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    
-    #results {
+    #content-area {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      padding: 24px;
-      padding-top: 0;
+      border-right: 1px solid var(--border-subtle);
     }
 
-    /* Empty State */
+    /* ── Empty State ─────────────────────────────────────── */
     #empty-state {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--text-mut);
-      gap: 24px;
-      animation: fade-slide-in 0.6s ease;
+      gap: 14px;
+      padding: 48px;
+      text-align: center;
     }
-    .empty-icon-wrap {
-      width: 80px; height: 80px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1));
-      border: 1px solid rgba(168,85,247,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent-1);
-      box-shadow: 0 0 32px rgba(99,102,241,0.1);
+    .empty-icon { color: var(--text-3); }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text-2); }
+    .empty-sub { font-size: 13px; color: var(--text-3); max-width: 340px; line-height: 1.65; }
+    .example-repos { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+    .example-chip {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-3);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      background: none;
+      transition: color 0.15s, border-color 0.15s;
     }
-    #empty-state h2 {
-      font-size: 1.8rem;
-      background: var(--accent-grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-    }
+    .example-chip:hover { color: var(--text); border-color: var(--text-3); }
 
-    /* Tabs */
-    #tabs { display: none; flex-direction: column; flex: 1; overflow: hidden; margin-top: 16px; }
-    #tabs.visible { display: flex; animation: fade-slide-in 0.4s ease; }
+    /* ── Tabs ────────────────────────────────────────────── */
+    #tabs { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    #tabs.visible { display: flex; }
+
     .tab-bar {
       display: flex;
-      gap: 8px;
-      padding: 6px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 12px;
-      border: 1px solid var(--panel-border);
-      margin-bottom: 16px;
-      width: fit-content;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
     .tab-btn {
-      padding: 8px 16px;
+      padding: 14px 16px;
       background: transparent;
       border: none;
-      border-radius: 8px;
-      color: var(--text-mut);
-      font-size: 0.9rem;
+      border-bottom: 2px solid transparent;
+      color: var(--text-2);
+      font-size: 13px;
       font-weight: 500;
+      font-family: var(--font);
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
     }
-    .tab-btn:hover { color: var(--text-main); }
-    .tab-btn.active {
-      color: #fff;
-      background: var(--accent-grad);
-      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+
+    .tab-content { display: none; flex: 1; overflow-y: auto; padding: 24px; }
+    .tab-content.active { display: block; }
+
+    /* ── Markdown Prose ──────────────────────────────────── */
+    .md-content {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text-2);
+      max-width: 800px;
     }
-    .tab-content { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; padding-right: 8px; }
-    .tab-content.active { display: block; animation: fade-slide-in 0.3s ease; }
-
-    /* Markdown styling */
-    .md-content { font-size: 0.95rem; line-height: 1.6; }
-    .md-content h1, .md-content h2, .md-content h3 { color: #fff; margin: 1.5em 0 0.8em; }
-    .md-content h1 { font-size: 1.8rem; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; width: fit-content; }
-    .md-content h2 { font-size: 1.3rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; }
-    .md-content p { color: #cbd5e1; margin-bottom: 1em; }
-    .md-content ul, .md-content ol { padding-left: 1.5em; margin-bottom: 1em; color: #cbd5e1; }
-    .md-content code { background: rgba(99,102,241,0.1); color: #a5b4fc; padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.85em; border: 1px solid rgba(99,102,241,0.2); }
-    .md-content pre { background: rgba(0,0,0,0.4); border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; overflow-x: auto; margin-bottom: 1em; }
-    .md-content pre code { background: none; border: none; padding: 0; color: #e2e8f0; }
-    .md-content table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
-    .md-content th { background: rgba(255,255,255,0.05); text-align: left; padding: 10px; border-bottom: 1px solid var(--panel-border); color: #fff; }
-    .md-content td { padding: 10px; border-bottom: 1px solid var(--panel-border); }
-    .md-content a { color: var(--accent-2); text-decoration: none; }
-    .md-content a:hover { text-decoration: underline; }
-    .md-content blockquote { border-left: 4px solid var(--accent-1); padding-left: 16px; color: var(--text-mut); font-style: italic; background: rgba(99,102,241,0.05); padding-top: 8px; padding-bottom: 8px; border-radius: 0 8px 8px 0; }
-
-    /* Cards */
-    .hotspot-grid, .vuln-list { display: flex; flex-direction: column; gap: 12px; }
-    .card {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--panel-border);
-      border-radius: 12px;
+    .md-content h1 { font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 20px; }
+    .md-content h2 { font-size: 15px; font-weight: 600; color: var(--text); margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-subtle); }
+    .md-content h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+    .md-content p { margin-bottom: 14px; }
+    .md-content ul, .md-content ol { padding-left: 20px; margin-bottom: 14px; }
+    .md-content li { margin-bottom: 4px; }
+    .md-content code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .md-content pre {
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: 6px;
       padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    .md-content pre code { background: none; border: none; padding: 0; color: var(--text-2); font-size: 13px; }
+    .md-content table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+    .md-content th { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text-2); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .md-content td { padding: 8px 12px; border-bottom: 1px solid var(--border-subtle); }
+    .md-content a { color: var(--accent); text-decoration: none; }
+    .md-content a:hover { text-decoration: underline; }
+    .md-content blockquote { border-left: 3px solid var(--border); padding-left: 16px; color: var(--text-3); margin: 16px 0; font-style: italic; }
+    .md-content strong { color: var(--text); font-weight: 600; }
+
+    /* ── Item Cards (hotspots + vulns) ───────────────────── */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.6px; }
+    .section-count { font-size: 12px; color: var(--text-3); }
+
+    .item-list { display: flex; flex-direction: column; gap: 6px; }
+    .item-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px 12px 19px;
       display: flex;
       align-items: center;
-      gap: 16px;
-      transition: all 0.2s ease;
+      gap: 14px;
       position: relative;
       overflow: hidden;
+      transition: background 0.12s;
     }
-    .card:hover {
-      background: rgba(255,255,255,0.04);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-      border-color: rgba(255,255,255,0.15);
+    .item-row::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
     }
-    .card::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-    }
-    .card.risk-CRITICAL::before { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
-    .card.risk-HIGH::before { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
-    .card.risk-MEDIUM::before { background: #eab308; box-shadow: 0 0 8px #eab308; }
-    .card.risk-LOW::before { background: var(--success); box-shadow: 0 0 8px var(--success); }
-    
+    .item-row:hover { background: var(--surface-2); }
+    .item-row.risk-CRITICAL::before { background: var(--danger); }
+    .item-row.risk-HIGH::before     { background: var(--warning); }
+    .item-row.risk-MEDIUM::before   { background: #eab308; }
+    .item-row.risk-LOW::before      { background: var(--success); }
+
     .risk-badge {
-      padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 3px 7px;
+      border-radius: 3px;
+      flex-shrink: 0;
     }
-    .badge-CRITICAL { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-    .badge-HIGH { background: rgba(245,158,11,0.1); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
-    .badge-MEDIUM { background: rgba(234,179,8,0.1); color: #eab308; border: 1px solid rgba(234,179,8,0.3); }
-    .badge-LOW { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-CRITICAL { background: rgba(239,68,68,0.1);  color: #f87171; border: 1px solid rgba(239,68,68,0.18); }
+    .badge-HIGH     { background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.18); }
+    .badge-MEDIUM   { background: rgba(234,179,8,0.1);  color: #fde047; border: 1px solid rgba(234,179,8,0.18); }
+    .badge-LOW      { background: rgba(34,197,94,0.1);  color: #4ade80; border: 1px solid rgba(34,197,94,0.18); }
 
-    .hotspot-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-    .hotspot-path { font-family: ui-monospace, monospace; font-size: 0.9rem; color: #fff; display: flex; align-items: center; gap: 8px;}
-    .hotspot-meta { font-size: 0.8rem; color: var(--text-mut); display: flex; gap: 12px; align-items: center;}
-    
-    .commit-sparkline {
-      height: 4px; width: 60px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow:hidden;
+    .item-body { flex: 1; min-width: 0; }
+    .item-path {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 5px;
     }
-    .commit-fill { height: 100%; background: var(--accent-grad); }
+    .item-meta { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 12px; }
+    .commit-bar-wrap { width: 64px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .commit-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; }
 
-    .vuln-body { flex: 1; display: flex; flex-direction: column; gap: 4px;}
-    .vuln-pkg { font-weight: 600; font-size: 1rem; color: #fff; }
-    .vuln-id { font-size: 0.8rem; color: var(--accent-1); }
-    .vuln-summary { font-size: 0.85rem; color: var(--text-mut); margin-top: 4px; line-height: 1.4;}
+    .vuln-name-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .vuln-pkg { font-weight: 600; font-size: 14px; color: var(--text); }
+    .vuln-version { font-size: 12px; color: var(--text-2); font-family: var(--mono); }
+    .vuln-id { font-size: 11px; color: var(--accent); text-decoration: none; font-family: var(--mono); }
+    .vuln-id:hover { text-decoration: underline; }
+    .vuln-summary { font-size: 13px; color: var(--text-2); line-height: 1.5; }
 
+    /* ── Diagram Tab ─────────────────────────────────────── */
     #diagram-wrap {
-      background: rgba(0,0,0,0.3); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; overflow-x: auto;
+      background: #111;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px;
+      overflow: auto;
     }
     #diagram-wrap .mermaid { display: flex; justify-content: center; }
 
-    /* Chat Panel */
+    /* ── Chat Panel ──────────────────────────────────────── */
     #chat-panel {
-      width: 400px;
-      margin: 16px 24px 24px 0;
+      width: 360px;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
-      border-radius: 16px;
-      overflow: hidden;
-      animation: fade-slide-in 0.5s ease;
+      background: var(--bg);
     }
     #chat-panel.hidden { display: none; }
+
     #chat-header {
-      padding: 16px;
-      background: rgba(0,0,0,0.2);
-      border-bottom: 1px solid var(--panel-border);
-      font-weight: 600;
+      height: 49px;
+      padding: 0 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
     }
+    .chat-dot {
+      width: 6px; height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+    #chat-header span { font-size: 13px; font-weight: 500; color: var(--text-2); }
+
     #chat-messages {
       flex: 1;
-      padding: 20px;
+      padding: 16px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px;
     }
     .msg {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      line-height: 1.5;
-      animation: fade-slide-in 0.3s ease forwards;
+      max-width: 88%;
+      padding: 10px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.55;
     }
     .msg-user {
-      background: var(--accent-grad);
+      background: var(--accent);
       color: #fff;
       align-self: flex-end;
-      border-bottom-right-radius: 4px;
-      box-shadow: 0 4px 12px rgba(99,102,241,0.2);
+      border-bottom-right-radius: 3px;
     }
     .msg-bot {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--panel-border);
-      color: var(--text-main);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-2);
       align-self: flex-start;
-      border-bottom-left-radius: 4px;
+      border-bottom-left-radius: 3px;
     }
     .msg-bot code {
-       background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.85em; color: var(--accent-1);
+      font-family: var(--mono);
+      font-size: 11px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: var(--text);
     }
-    
     .typing-indicator {
-      display: flex; gap: 4px; padding: 16px 20px; align-self: flex-start;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--panel-border); border-radius: 12px; border-bottom-left-radius: 4px;
+      display: flex;
+      gap: 4px;
+      padding: 10px 13px;
+      align-self: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      border-bottom-left-radius: 3px;
     }
-    .typing-dot { width: 6px; height: 6px; background: var(--text-mut); border-radius: 50%; animation: typing 1.4s infinite; opacity: 0.3;}
-    .typing-dot:nth-child(2) { animation-delay: 0.2s;}
-    .typing-dot:nth-child(3) { animation-delay: 0.4s;}
-    @keyframes typing { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-4px); } }
+    .typing-dot {
+      width: 5px; height: 5px;
+      background: var(--text-3);
+      border-radius: 50%;
+      animation: t-bounce 1.2s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes t-bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.4; }
+      50%       { transform: translateY(-3px); opacity: 1; }
+    }
 
     #chat-input-row {
-      padding: 16px;
-      background: rgba(0,0,0,0.2);
-      border-top: 1px solid var(--panel-border);
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-subtle);
       display: flex;
-      gap: 12px;
+      gap: 8px;
+      flex-shrink: 0;
     }
     #chat-input {
-      border-radius: 10px;
-      height: 48px;
+      flex: 1;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s;
     }
+    #chat-input:focus { border-color: var(--accent); }
+    #chat-input::placeholder { color: var(--text-3); }
     #send-btn {
-      background: var(--accent-grad);
+      background: var(--accent);
       border: none;
-      width: 48px;
-      border-radius: 10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
       color: #fff;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
     }
-    #send-btn:hover { transform: scale(1.05); box-shadow: 0 0 16px rgba(99,102,241,0.4); }
-    #send-btn:active { transform: scale(0.95); }
-    #send-btn svg { width: 20px; height: 20px; }
+    #send-btn:hover { background: var(--accent-hover); }
+    #send-btn:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; }
 
+    /* ── Utility ─────────────────────────────────────────── */
+    .empty-list {
+      font-size: 13px;
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 0;
+    }
   </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
+<div style="display:flex;flex-direction:column;height:100vh;">
 
-<div id="app">
-  <header class="glass-panel">
-    <div class="logo">CBOA</div>
-    <div>
-      <h1>Codebase Onboarding Agent</h1>
-      <span class="tagline">Point it at any public GitHub repo → get a full onboarding package</span>
-    </div>
+  <header>
+    <span class="logo">CBOA</span>
+    <span class="header-sep">·</span>
+    <span class="header-title">Codebase Onboarding Agent</span>
   </header>
 
-  <div id="analyze-bar" class="glass-panel">
-    <div class="input-wrapper">
-      <input id="repo-input" type="text" placeholder="owner/repo (e.g. tiangolo/fastapi)" />
-      <input id="branch-input" type="text" placeholder="branch" value="main" />
-      <button id="analyze-btn" onclick="startAnalysis()">
-        <span id="btn-text">Analyze</span>
-        <svg id="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </button>
-    </div>
+  <div id="analyze-bar">
+    <input id="repo-input" type="text" placeholder="owner/repo — e.g. tiangolo/fastapi" autocomplete="off" />
+    <input id="branch-input" type="text" placeholder="branch" value="main" autocomplete="off" />
+    <button id="analyze-btn" onclick="startAnalysis()">
+      <span id="btn-label">Analyze</span>
+      <svg id="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
   </div>
 
-  <div id="status-bar" class="glass-panel">
-    <div class="progress-dots" id="status-spinner" style="display:none;">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>
-    <span id="status-text"></span>
-  </div>
+  <div id="progress-track"><div id="progress-fill"></div></div>
+  <div id="status-bar"><span id="status-text"></span></div>
 
   <div id="main">
-    <div id="results">
+    <div id="content-area">
+
       <div id="empty-state">
-        <div class="empty-icon-wrap">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </div>
-        <div style="text-align:center;">
-          <h2>Ready to Explore</h2>
-          <p>Enter a GitHub repository above to generate a deeply analyzed onboarding package.</p>
+        <svg class="empty-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polyline points="16 18 22 12 16 6"/>
+          <polyline points="8 6 2 12 8 18"/>
+        </svg>
+        <div class="empty-title">Analyze a repository</div>
+        <div class="empty-sub">Enter any public GitHub repository to generate a wiki, hotspot map, vulnerability report, architecture diagram, and 7-day onboarding plan.</div>
+        <div class="example-repos">
+          <button class="example-chip" onclick="fillExample('tiangolo/fastapi')">tiangolo/fastapi</button>
+          <button class="example-chip" onclick="fillExample('vercel/next.js')">vercel/next.js</button>
+          <button class="example-chip" onclick="fillExample('django/django')">django/django</button>
         </div>
       </div>
 
@@ -502,92 +543,55 @@
           <button class="tab-btn" onclick="switchTab('diagram', this)">Architecture</button>
           <button class="tab-btn" onclick="switchTab('plan', this)">7-Day Plan</button>
         </div>
-
-        <div id="tab-wiki" class="tab-content active"><div class="md-content" id="wiki-content"></div></div>
+        <div id="tab-wiki"     class="tab-content active"><div class="md-content" id="wiki-content"></div></div>
         <div id="tab-hotspots" class="tab-content"><div id="hotspots-content"></div></div>
-        <div id="tab-vulns" class="tab-content"><div id="vulns-content"></div></div>
-        <div id="tab-diagram" class="tab-content"><div id="diagram-wrap"><div class="mermaid" id="diagram-content"></div></div></div>
-        <div id="tab-plan" class="tab-content"><div class="md-content" id="plan-content"></div></div>
+        <div id="tab-vulns"    class="tab-content"><div id="vulns-content"></div></div>
+        <div id="tab-diagram"  class="tab-content"><div id="diagram-wrap"><div class="mermaid" id="diagram-content"></div></div></div>
+        <div id="tab-plan"     class="tab-content"><div class="md-content" id="plan-content"></div></div>
       </div>
+
     </div>
 
-    <div id="chat-panel" class="glass-box hidden">
+    <div id="chat-panel" class="hidden">
       <div id="chat-header">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-1)" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        Ask the codebase
+        <div class="chat-dot"></div>
+        <span>Ask the codebase</span>
       </div>
       <div id="chat-messages">
-        <div class="msg msg-bot">Hi! I've indexed this codebase. Ask me anything — "How does auth work?", "Where are the API routes?", etc.</div>
+        <div class="msg msg-bot">Hi — this codebase is indexed. Ask me anything: "How does auth work?", "Where are the API routes?", "What does X function do?"</div>
       </div>
       <div id="chat-input-row">
-        <input id="chat-input" type="text" placeholder="Ask a question..." onkeydown="chatKeydown(event)" autocomplete="off" />
+        <input id="chat-input" type="text" placeholder="Ask a question…" onkeydown="chatKeydown(event)" autocomplete="off" />
         <button id="send-btn" onclick="sendChat()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
         </button>
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
   mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
 
-  // Canvas background animation
-  const canvas = document.getElementById('bg-canvas');
-  const ctx = canvas.getContext('2d');
-  let width, height;
-  let particles = [];
-  
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  for(let i=0; i<100; i++) {
-    particles.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: Math.random() * 1.5,
-      dx: (Math.random() - 0.5) * 0.2,
-      dy: (Math.random() - 0.5) * 0.2,
-      opacity: Math.random() * 0.5 + 0.2
-    });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    particles.forEach(p => {
-      p.x += p.dx;
-      p.y += p.dy;
-      if (p.x < 0 || p.x > width) p.dx *= -1;
-      if (p.y < 0 || p.y > height) p.dy *= -1;
-      
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
-      ctx.fill();
-    });
-    
-    // Draw grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.015)';
-    ctx.lineWidth = 1;
-    const size = 50;
-    ctx.beginPath();
-    for(let x=0; x<width; x+=size) { ctx.moveTo(x,0); ctx.lineTo(x,height); }
-    for(let y=0; y<height; y+=size) { ctx.moveTo(0,y); ctx.lineTo(width,y); }
-    ctx.stroke();
-    
-    requestAnimationFrame(draw);
-  }
-  draw();
-
-  // App logic
   let currentRepo = null;
   let pollTimer = null;
   let stepTimer = null;
-  const analysisSteps = ["Cloning repository...", "Parsing Abstract Syntax Trees...", "Generating documentation...", "Building architecture diagrams...", "Finalizing analysis..."];
+  const steps = [
+    'Fetching repository structure…',
+    'Parsing abstract syntax trees…',
+    'Running dependency scan…',
+    'Generating architecture diagram…',
+    'Compiling onboarding package…',
+  ];
+
+  function fillExample(repo) {
+    document.getElementById('repo-input').value = repo;
+    document.getElementById('repo-input').focus();
+  }
 
   function normalizeRepo(raw) {
     let s = raw.trim().replace(/\.git$/, '');
@@ -599,57 +603,72 @@
   async function startAnalysis() {
     const repo = normalizeRepo(document.getElementById('repo-input').value);
     const branch = document.getElementById('branch-input').value.trim() || 'main';
-    if (!repo) {
-      alert("Please enter a valid GitHub repository (e.g., owner/repo)");
-      return;
-    }
+    if (!repo) return;
     document.getElementById('repo-input').value = repo;
     currentRepo = repo;
 
-    const btn = document.getElementById('analyze-btn');
-    btn.disabled = true;
-    document.getElementById('btn-text').style.display = 'none';
-    const icon = document.getElementById('btn-icon');
-    icon.outerHTML = `<div id="btn-icon" class="btn-spinner"></div>`;
-
-    setStatus('running', `Starting analysis for ${repo}...`);
+    setBtnLoading(true);
+    showProgress('running');
+    setStatus('running', steps[0]);
 
     try {
-      const r = await fetch('/analyze', {
+      await fetch('/analyze', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ repo, branch })
       });
-      const data = await r.json();
-      if (data.status === 'already_running') {
-        setStatus('running', `Analysis already running for ${repo}, polling...`);
-      }
-      startFakeProgress();
+      startStepCycle();
       pollForResults(repo);
     } catch (e) {
-      resetBtn();
-      setStatus('error', `Failed to start: ${e.message}`);
+      setBtnLoading(false);
+      showProgress('error');
+      setStatus('error', 'Failed to start: ' + e.message);
     }
   }
 
-  function startFakeProgress() {
+  function startStepCycle() {
     let i = 0;
     if (stepTimer) clearInterval(stepTimer);
-    document.getElementById('status-text').innerHTML = `<span class="status-text-grad">${analysisSteps[0]}</span>`;
     stepTimer = setInterval(() => {
-      i = Math.min(i + 1, analysisSteps.length - 1);
-      if (document.getElementById('status-bar').classList.contains('visible') && !document.getElementById('status-text').innerHTML.includes('Failed')) {
-        document.getElementById('status-text').innerHTML = `<span class="status-text-grad">${analysisSteps[i]}</span>`;
+      i = Math.min(i + 1, steps.length - 1);
+      const el = document.getElementById('status-text');
+      if (!el.classList.contains('success') && !el.classList.contains('error')) {
+        el.textContent = steps[i];
       }
     }, 4000);
   }
 
-  function resetBtn() {
+  function setBtnLoading(loading) {
     const btn = document.getElementById('analyze-btn');
-    btn.disabled = false;
-    document.getElementById('btn-text').style.display = 'inline';
-    const icon = document.getElementById('btn-icon');
-    icon.outerHTML = `<svg id="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+    btn.disabled = loading;
+    document.getElementById('btn-label').textContent = loading ? 'Analyzing' : 'Analyze';
+    const arrow = document.getElementById('btn-arrow');
+    if (loading) {
+      arrow.outerHTML = '<div id="btn-arrow" class="spinner"></div>';
+    } else {
+      const el = document.getElementById('btn-arrow');
+      if (el) el.outerHTML = '<svg id="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+    }
+  }
+
+  function showProgress(state) {
+    const track = document.getElementById('progress-track');
+    const fill = document.getElementById('progress-fill');
+    track.style.display = 'block';
+    fill.className = '';
+    if (state === 'running') fill.classList.add('indeterminate');
+    else if (state === 'done')  { fill.style.width = '100%'; fill.classList.add('done'); }
+    else if (state === 'error') { fill.style.width = '100%'; fill.classList.add('error'); }
+  }
+
+  function setStatus(state, text) {
+    const bar = document.getElementById('status-bar');
+    const el  = document.getElementById('status-text');
+    bar.classList.add('visible');
+    el.className = '';
+    el.textContent = text;
+    if (state === 'complete') el.classList.add('success');
+    if (state === 'error')    el.classList.add('error');
   }
 
   function pollForResults(repo) {
@@ -657,50 +676,33 @@
     pollTimer = setInterval(async () => {
       try {
         const slug = repo.replace('/', '__');
-        const r = await fetch(`/report/${slug}`);
+        const r = await fetch('/report/' + slug);
         if (!r.ok) return;
         const data = await r.json();
-
         if (data.status === 'complete') {
           clearInterval(pollTimer);
           if (stepTimer) clearInterval(stepTimer);
-          resetBtn();
-          setStatus('complete', `Analysis complete for ${repo}`);
+          setBtnLoading(false);
+          showProgress('done');
+          setStatus('complete', 'Analysis complete — ' + repo);
           renderResults(data);
         } else if (data.status === 'error') {
           clearInterval(pollTimer);
           if (stepTimer) clearInterval(stepTimer);
-          resetBtn();
-          setStatus('error', `Analysis failed: ${data.error || 'unknown error'}`);
+          setBtnLoading(false);
+          showProgress('error');
+          setStatus('error', 'Analysis failed: ' + (data.error || 'unknown error'));
         }
-      } catch (e) {}
+      } catch (_) {}
     }, 3000);
-  }
-
-  function setStatus(state, text) {
-    const bar = document.getElementById('status-bar');
-    const spinner = document.getElementById('status-spinner');
-    const label = document.getElementById('status-text');
-
-    bar.classList.add('visible');
-    spinner.style.display = state === 'running' ? 'flex' : 'none';
-
-    if (state !== 'running') {
-      const color = state === 'complete' ? 'var(--success)' : 'var(--danger)';
-      label.innerHTML = `<span style="color:${color};font-weight:500;">${escapeHtml(text)}</span>`;
-    } else {
-      label.innerHTML = `<span class="status-text-grad">${escapeHtml(text)}</span>`;
-    }
   }
 
   function renderResults(data) {
     document.getElementById('empty-state').style.display = 'none';
     document.getElementById('tabs').classList.add('visible');
     document.getElementById('chat-panel').classList.remove('hidden');
-
-    document.getElementById('wiki-content').innerHTML = marked.parse(data.wiki || '_No wiki generated._');
-    document.getElementById('plan-content').innerHTML = marked.parse(data.onboarding_plan || '_No plan generated._');
-    
+    document.getElementById('wiki-content').innerHTML  = marked.parse(data.wiki || '_No wiki generated._');
+    document.getElementById('plan-content').innerHTML  = marked.parse(data.onboarding_plan || '_No plan generated._');
     renderHotspots(data.hotspots || []);
     renderVulns(data.dep_vulnerabilities || []);
     renderDiagram(data.arch_diagram || '');
@@ -708,63 +710,82 @@
 
   function renderHotspots(hotspots) {
     const el = document.getElementById('hotspots-content');
-    if (!hotspots.length) { el.innerHTML = '<p style="color:var(--success)">No hotspot data available.</p>'; return; }
-    
-    const maxCommits = Math.max(...hotspots.map(h => h.commit_count));
-    
-    el.innerHTML = '<div class="hotspot-grid">' + hotspots.map(h => {
-      const w = Math.max(5, (h.commit_count / maxCommits) * 100);
-      return `
-      <div class="card risk-${h.risk_level}">
-        <span class="risk-badge badge-${h.risk_level}">${h.risk_level}</span>
-        <div class="hotspot-info">
-          <span class="hotspot-path">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-            ${escapeHtml(h.path)}
-          </span>
-          <span class="hotspot-meta">
-            <span>${h.commit_count} commits</span>
-            <div class="commit-sparkline"><div class="commit-fill" style="width:${w}%"></div></div>
-            <span>${fmtBytes(h.size_bytes)}</span>
-          </span>
-        </div>
-      </div>`
-    }).join('') + '</div>';
+    if (!hotspots.length) {
+      el.innerHTML = '<div class="empty-list"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>No high-risk hotspots detected.</div>';
+      return;
+    }
+    const max = Math.max(...hotspots.map(h => h.commit_count));
+    el.innerHTML =
+      '<div class="section-header">' +
+        '<span class="section-title">Risk Hotspots</span>' +
+        '<span class="section-count">' + hotspots.length + ' files</span>' +
+      '</div>' +
+      '<div class="item-list">' +
+      hotspots.map(h => {
+        const w = Math.max(4, (h.commit_count / max) * 100);
+        return '<div class="item-row risk-' + h.risk_level + '">' +
+          '<span class="risk-badge badge-' + h.risk_level + '">' + h.risk_level + '</span>' +
+          '<div class="item-body">' +
+            '<div class="item-path">' + escHtml(h.path) + '</div>' +
+            '<div class="item-meta">' +
+              '<span>' + h.commit_count + ' commits</span>' +
+              '<div class="commit-bar-wrap"><div class="commit-bar-fill" style="width:' + w + '%"></div></div>' +
+              '<span>' + fmtBytes(h.size_bytes) + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>';
   }
 
   function renderVulns(vulns) {
     const el = document.getElementById('vulns-content');
-    if (!vulns.length) { el.innerHTML = '<p style="color:var(--success)">✓ No known vulnerabilities found.</p>'; return; }
-    el.innerHTML = `<p style="color:var(--text-mut);margin-bottom:16px">${vulns.length} vulnerabilities found</p><div class="vuln-list">` + 
-      vulns.map(v => `
-      <div class="card risk-${v.severity}">
-        <span class="risk-badge badge-${v.severity}">${v.severity}</span>
-        <div class="vuln-body">
-          <div class="vuln-pkg">${escapeHtml(v.package)} <span style="color:var(--text-mut);font-weight:400;font-size:0.9em">${escapeHtml(v.version)}</span></div>
-          <a class="vuln-id" href="${escapeHtml(v.osv_url)}" target="_blank">${escapeHtml(v.vuln_id)}</a>
-          <div class="vuln-summary">${escapeHtml(v.summary)}</div>
-        </div>
-      </div>`
-    ).join('') + '</div>';
+    if (!vulns.length) {
+      el.innerHTML = '<div class="empty-list"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>No known vulnerabilities found.</div>';
+      return;
+    }
+    el.innerHTML =
+      '<div class="section-header">' +
+        '<span class="section-title">Vulnerabilities</span>' +
+        '<span class="section-count">' + vulns.length + ' found</span>' +
+      '</div>' +
+      '<div class="item-list">' +
+      vulns.map(v =>
+        '<div class="item-row risk-' + v.severity + '">' +
+          '<span class="risk-badge badge-' + v.severity + '">' + v.severity + '</span>' +
+          '<div class="item-body">' +
+            '<div class="vuln-name-row">' +
+              '<span class="vuln-pkg">'     + escHtml(v.package) + '</span>' +
+              '<span class="vuln-version">' + escHtml(v.version) + '</span>' +
+              '<a class="vuln-id" href="'   + escHtml(v.osv_url) + '" target="_blank" rel="noopener">' + escHtml(v.vuln_id) + '</a>' +
+            '</div>' +
+            '<div class="vuln-summary">' + escHtml(v.summary) + '</div>' +
+          '</div>' +
+        '</div>'
+      ).join('') +
+      '</div>';
   }
 
   async function renderDiagram(raw) {
     const el = document.getElementById('diagram-content');
     const match = raw.match(/```(?:mermaid)?\s*([\s\S]*?)```/);
     const code = match ? match[1].trim() : raw.trim();
-    if (!code) { el.innerHTML = '<p style="color:var(--text-mut)">No diagram generated.</p>'; return; }
+    if (!code) {
+      el.innerHTML = '<p style="color:var(--text-3);font-size:13px;">No diagram generated.</p>';
+      return;
+    }
     try {
       const { svg } = await mermaid.render('arch-svg', code);
       el.innerHTML = svg;
     } catch (e) {
-      el.innerHTML = `<pre style="color:var(--danger);font-size:.8rem">${escapeHtml(e.message)}\n\n${escapeHtml(code)}</pre>`;
+      el.innerHTML = '<pre style="color:var(--danger);font-size:12px;">' + escHtml(e.message) + '\n\n' + escHtml(code) + '</pre>';
     }
   }
 
   function switchTab(name, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`tab-${name}`).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
   }
 
@@ -774,7 +795,6 @@
     const input = document.getElementById('chat-input');
     const q = input.value.trim();
     if (!q || !currentRepo) return;
-
     appendMsg(q, 'user');
     input.value = '';
     const btn = document.getElementById('send-btn');
@@ -789,16 +809,15 @@
     try {
       const r = await fetch('/chat', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ repo: currentRepo, question: q })
       });
       const data = await r.json();
       thinking.remove();
-      if (r.ok) appendMsg(data.answer, 'bot');
-      else appendMsg(`Error: ${data.detail || 'unknown'}`, 'bot');
+      appendMsg(r.ok ? data.answer : 'Error: ' + (data.detail || 'unknown'), 'bot');
     } catch (e) {
       thinking.remove();
-      appendMsg(`Network error: ${e.message}`, 'bot');
+      appendMsg('Network error: ' + e.message, 'bot');
     }
     btn.disabled = false;
   }
@@ -806,27 +825,34 @@
   function appendMsg(text, type) {
     const msgs = document.getElementById('chat-messages');
     const div = document.createElement('div');
-    div.className = `msg msg-${type}`;
-    div.innerHTML = escapeHtml(text).replace(/`([^`]+)`/g, '<code>$1</code>');
+    div.className = 'msg msg-' + type;
+    div.innerHTML = escHtml(text).replace(/`([^`]+)`/g, '<code>$1</code>');
     msgs.appendChild(div);
     scrollChat();
   }
 
   function scrollChat() {
-    const msgs = document.getElementById('chat-messages');
-    msgs.scrollTop = msgs.scrollHeight;
+    const m = document.getElementById('chat-messages');
+    m.scrollTop = m.scrollHeight;
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function fmtBytes(b) {
-    if (b > 1024) return (b / 1024).toFixed(1) + ' KB';
+    if (b >= 1048576) return (b / 1048576).toFixed(1) + ' MB';
+    if (b >= 1024)    return (b / 1024).toFixed(1) + ' KB';
     return b + ' B';
   }
 
-  document.getElementById('repo-input').addEventListener('keydown', e => { if (e.key === 'Enter') startAnalysis(); });
+  document.getElementById('repo-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startAnalysis();
+  });
 </script>
 </body>
 </html>

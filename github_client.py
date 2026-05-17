@@ -4,12 +4,18 @@ from collections import defaultdict
 
 import httpx
 
-TOKEN = os.environ.get("GITHUB_TOKEN", "")
-HEADERS = {
-    "Authorization": f"Bearer {TOKEN}",
-    "X-GitHub-Api-Version": "2022-11-28",
-    "Accept": "application/vnd.github.v3+json",
-}
+def _github_headers() -> dict:
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if not token:
+        raise RuntimeError(
+            "GITHUB_TOKEN environment variable is not set. "
+            "Add it to your Render (or local .env) environment variables."
+        )
+    return {
+        "Authorization": f"Bearer {token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Accept": "application/vnd.github.v3+json",
+    }
 
 # File extensions we care about for analysis
 CODE_EXTENSIONS = {
@@ -33,7 +39,7 @@ async def get_repo_tree(repo: str, branch: str = "main") -> list[RepoFile]:
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             f"https://api.github.com/repos/{repo}/git/trees/{branch}?recursive=1",
-            headers=HEADERS,
+            headers=_github_headers(),
             timeout=20,
         )
     if resp.status_code != 200:
@@ -59,7 +65,7 @@ async def get_file_content(repo: str, path: str) -> str:
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             f"https://api.github.com/repos/{repo}/contents/{path}",
-            headers=HEADERS,
+            headers=_github_headers(),
             timeout=15,
         )
     if resp.status_code != 200:
@@ -103,7 +109,7 @@ async def get_commit_churn(repo: str, max_commits: int = 40) -> dict[str, int]:
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             f"https://api.github.com/repos/{repo}/commits?per_page={max_commits}",
-            headers=HEADERS,
+            headers=_github_headers(),
             timeout=20,
         )
     if resp.status_code != 200:
@@ -118,7 +124,7 @@ async def get_commit_churn(repo: str, max_commits: int = 40) -> dict[str, int]:
             sha = commit["sha"]
             cr = await client.get(
                 f"https://api.github.com/repos/{repo}/commits/{sha}",
-                headers=HEADERS,
+                headers=_github_headers(),
                 timeout=10,
             )
             if cr.status_code in (403, 429):
